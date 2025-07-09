@@ -27,6 +27,7 @@ public class McpClientApplication {
                 System.out.println(tool.inputSchema());
                 System.out.println("------------------");
             });
+                System.out.println("***************************");
             String params = """
                     {
                      "name" : "OCP",
@@ -34,7 +35,11 @@ public class McpClientApplication {
                     """;
             McpSchema.CallToolResult result =
             clients.get(0).callTool(new McpSchema.CallToolRequest("getCompanyByName",params));
-            System.out.println(result.content().get(0).type());
+            McpSchema.Content content = result.content().get(0);
+            if(content instanceof McpSchema.TextContent) {
+                McpSchema.TextContent textContent = (McpSchema.TextContent) content;
+                System.out.println(textContent.text());
+            }
             });
         };
     }
