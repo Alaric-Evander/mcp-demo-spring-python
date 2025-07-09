@@ -1,7 +1,10 @@
 package bousmara.yassine.mcpserver;
 
+import bousmara.yassine.mcpserver.tools.StockTools;
+import org.springframework.ai.tool.method.MethodToolCallbackProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class McpServerApplication {
@@ -10,4 +13,8 @@ public class McpServerApplication {
         SpringApplication.run(McpServerApplication.class, args);
     }
 
+    @Bean
+    public MethodToolCallbackProvider getCallbackProvider(StockTools stocktools) {
+        return MethodToolCallbackProvider.builder().toolObjects(stocktools).build();
+    }
 }
