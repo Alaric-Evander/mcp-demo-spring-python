@@ -1,6 +1,7 @@
 package bousmara.yassine.mcpclient;
 
 import io.modelcontextprotocol.client.McpSyncClient;
+import io.modelcontextprotocol.spec.McpSchema;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -26,6 +27,14 @@ public class McpClientApplication {
                 System.out.println(tool.inputSchema());
                 System.out.println("------------------");
             });
+            String params = """
+                    {
+                     "name" : "OCP",
+                    }
+                    """;
+            McpSchema.CallToolResult result =
+            clients.get(0).callTool(new McpSchema.CallToolRequest("getCompanyByName",params));
+            System.out.println(result.content().get(0).type());
             });
         };
     }
