@@ -17,33 +17,24 @@ public class McpClientApplication {
     }
 
     @Bean
-    public CommandLineRunner commandLineRunner(List<McpSyncClient> clients) {
+    CommandLineRunner run(List<McpSyncClient> clients) {
         return args -> {
             clients.forEach(client -> {
-            client.listTools().tools().forEach(tool -> {
-                System.out.println("------------------");
-                System.out.println(tool.name());
-                System.out.println(tool.description());
-                System.out.println(tool.inputSchema());
-                System.out.println("------------------");
+                client.listTools().tools().forEach(tool -> {
+                    System.out.println("*");
+                    System.out.println(tool.name());
+                    System.out.println(tool.inputSchema());
+                    System.out.println(tool.description());
+                    System.out.println("");
+                });
             });
-                System.out.println("***************************");
-            String params = """
+            var params= """
                     {
-                     "name" : "OCP",
+                     "companyName":"OCP"
                     }
                     """;
-            McpSchema.CallToolResult result =
-            clients.get(0).callTool(new McpSchema.CallToolRequest("getCompanyByName",params));
-            McpSchema.Content content = result.content().get(0);
-            if(content instanceof McpSchema.TextContent) {
-                McpSchema.TextContent textContent = (McpSchema.TextContent) content;
-                System.out.println(textContent.text());
-            }
-            });
+            McpSchema.CallToolResult result = clients.get(0).callTool(new McpSchema.CallToolRequest("getStockByCompanyName", params));
+            System.out.println(result.content().get(0).type());
         };
     }
-    }
-
-
-
+}

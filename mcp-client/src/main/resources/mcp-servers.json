@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "python-server": {
+      "command": "C:/Users/yassi/scoop/shims/uv.exe",
+      "args": [
+        "run",
+        "--with",
+        "mcp[cli]",
+        "mcp",
+        "run",
+        "D:/COURS S8/SIDM/mcp-demo-spring-python/python-mcp-server/server.py"
+      ]
+    },
+    "filesystem": {
+      "command": "D:/Logiciel/NodeJs/app/npx.cmd",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "D:/COURS S8/SIDM/mcp-demo-spring-python"
+      ]
+    }
+  }
+}
