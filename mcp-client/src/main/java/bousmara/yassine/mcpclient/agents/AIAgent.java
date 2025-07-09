@@ -13,7 +13,7 @@ public class AIAgent {
     public AIAgent(ChatClient.Builder chatClient, ToolCallbackProvider toolCallbackProvider) {
         this.chatClient = chatClient
                 .defaultSystem(""" 
-                                        Answwer the user queries based on the existing tools. 
+                                        Answer the user queries based on the existing tools. 
                                         You are a financial assistant specializing in Moroccan companies.
                                         Important rules:
                                         1. Always use available tools to obtain accurate data.

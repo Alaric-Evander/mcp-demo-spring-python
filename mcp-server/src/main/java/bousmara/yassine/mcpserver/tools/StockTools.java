@@ -1,43 +1,114 @@
 package bousmara.yassine.mcpserver.tools;
 
-import jdk.jfr.Description;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class StockTools {
-    private List<Company> companies = List.of(
-            new Company("Maroc Telecom", "Telecom",3.6,10600, "Maroc"),
-            new Company("OCP", "Extraction minière",5.6,20000, "Maroc")
+    private final List<Company> companies = List.of(
+            new Company("Maroc Telecom", "Telecommunications", 36.7, 10600, "Maroc", "www.iam.ma"),
+            new Company("OCP", "Extraction minière", 95.2, 20000, "Maroc", "www.ocpgroup.ma")
     );
 
-    @Tool(description = "Get All Companies")
-    public List<Company> getAllCompanies() {
-        return companies;
+    @Tool(name = "get_company_full_info", description = "Get complete information about a company including stock data")
+    public String getCompanyFullInfo(String companyName) {
+        Company company = companies.stream()
+                .filter(c -> c.name().equalsIgnoreCase(companyName))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        Stock stock = getStockByCompanyName(companyName);
+
+        return formatCompanyResponse(company, stock);
+    }
+
+    @Tool(name = "get_stock_info", description = "Get current stock information for a company")
+    public String getStockInfo(String companyName) {
+        Company company = companies.stream()
+                .filter(c -> c.name().equalsIgnoreCase(companyName))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        Stock stock = getStockByCompanyName(companyName);
+
+        return formatStockResponse(company, stock);
     }
 
     @Tool
-    public Company getCompanyByName(String name) {
-        return companies.stream().filter(c->c.name().equals(name)).findFirst().orElseThrow(()->new RuntimeException("Company not found"));
+    private Stock getStockByCompanyName(String name) {
+        // Simulate realistic stock variations
+        double basePrice = name.equals("Maroc Telecom") ? 500 : 300;
+        double variation = (Math.random() * 10) - 5; // -5% to +5%
+        double currentPrice = basePrice * (1 + variation/100);
+
+        return new Stock(name, LocalDate.now(), currentPrice, variation);
     }
 
-    @Tool
-    public Stock getStockByCompanyName(String name) {
-        return new Stock(name, LocalDate.now(), 300+Math.random()*300);
+    private String formatCompanyResponse(Company company, Stock stock) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.FRENCH);
+
+        return String.format("""
+            *%s* - Informations complètes:
+            
+            * Secteur d'activité: %s
+            * Chiffre d'affaires: %.1f milliards MAD
+            * Effectif: %,d employés
+            * Pays: %s
+            * Site web: %s
+            
+            *Informations boursières (%s):*
+            * Cours actuel: %.2f MAD
+            * Variation: %.2f%%
+            """,
+                company.name(),
+                company.activity(),
+                company.turnover(),
+                company.employeesCount(),
+                company.country(),
+                company.website(),
+                stock.date().format(formatter),
+                stock.stock(),
+                stock.variation()
+        );
     }
-}
 
-record Company(String name,
-               String activity,
-               @Description("The turnover In Milliard MAD")
-               double turnover,
-               int employeesCount,
-               String country){
+    private String formatStockResponse(Company company, Stock stock) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.FRENCH);
 
-}
-record Stock(String companyName, LocalDate date, double stock){
+        return String.format("""
+            *%s* - Données boursières:
+            
+            * Date: %s
+            * Cours: %.2f MAD
+            * Variation: %.2f%%
+            * Secteur: %s
+            """,
+                company.name(),
+                stock.date().format(formatter),
+                stock.stock(),
+                stock.variation(),
+                company.activity()
+        );
+    }
 
+    record Company(
+            String name,
+            String activity,
+            double turnover,
+            int employeesCount,
+            String country,
+            String website
+    ) {}
+
+    record Stock(
+            String companyName,
+            LocalDate date,
+            double stock,
+            double variation
+    ) {}
 }

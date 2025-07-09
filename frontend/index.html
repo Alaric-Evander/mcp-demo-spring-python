@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --ai-bubble: #f1f5f9;
+            --user-bubble: #3498db;
+            --text-dark: #2c3e50;
+            --text-light: #ecf0f1;
+            --error: #e74c3c;
+            --error-bg: #fdecea;
+            --warning: #f39c12;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        #header h2 {
+            margin: 0;
+            font-weight: 500;
+        }
+
+        #status {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        #status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e74c3c;
+            margin-right: 8px;
+            transition: all 0.3s ease;
+        }
+
+        #status.connected #status-indicator {
+            background: #2ecc71;
+        }
+
+        #status.reconnecting #status-indicator {
+            background: var(--warning);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        #messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f9f9f9;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            max-width: 70%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .ai-message {
+            align-self: flex-start;
+            background: var(--ai-bubble);
+            color: var(--text-dark);
+            border-radius: 18px 18px 18px 4px;
+            padding: 12px 16px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: var(--user-bubble);
+            color: var(--text-light);
+            border-radius: 18px 18px 4px 18px;
+            padding: 12px 16px;
+            margin-left: auto;
+        }
+
+        .error-message {
+            background: var(--error-bg) !important;
+            border-left: 4px solid var(--error) !important;
+        }
+
+        .message-sender {
+            font-weight: 500;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .error-sender {
+            color: var(--error) !important;
+            font-weight: bold !important;
+        }
+
+        #input-container {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+        }
+
+        #message-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 24px;
+            font-size: 16px;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        #message-input:focus {
+            border-color: var(--secondary);
+        }
+
+        #send-button {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            padding: 0 20px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #send-button:hover {
+            background: #2980b9;
+        }
+
+        #send-button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .typing-indicator {
+            display: flex;
+            padding: 12px 16px;
+            background: var(--ai-bubble);
+            border-radius: 18px;
+            width: fit-content;
+            margin-bottom: 15px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #7f8c8d;
+            border-radius: 50%;
+            margin: 0 3px;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .data-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            border-left: 4px solid var(--secondary);
+        }
+
+        .error-card {
+            border-left: 4px solid var(--error) !important;
+        }
+
+        .data-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .data-title {
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .data-value {
+            font-weight: bold;
+            color: #27ae60;
+        }
+
+        .data-detail {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .error-details {
+            background: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 8px;
+            margin-top: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+<div id="chat-container">
+    <div id="header">
+        <h2>AI Assistant</h2>
+        <div id="status">
+            <span id="status-indicator"></span>
+            <span id="status-text">Connecting...</span>
+        </div>
+    </div>
+
+    <div id="messages"></div>
+
+    <div id="input-container">
+        <input type="text" id="message-input" placeholder="Type your message here..." autocomplete="off">
+        <button id="send-button">Send</button>
+    </div>
+</div>
+
+<script>
+    const API_BASE = 'http://127.0.0.1:8066';
+    let eventSource = null;
+    let isTyping = false;
+    let lastMessageTime = Date.now();
+    let reconnectAttempts = 0;
+    const MAX_RECONNECT_ATTEMPTS = 5;
+    const RECONNECT_DELAY = 5000; // 5 seconds
+
+    // Initialize connection when page loads
+    window.onload = function() {
+        connectSSE(true); // Show greeting once
+        setupEventListeners();
+        startConnectionMonitor();
+    };
+
+    function connectSSE(showGreeting = true) {
+        // Close existing connection if any
+        if (eventSource) {
+            eventSource.close();
+        }
+
+        updateStatus('Connecting...', false);
+        eventSource = new EventSource(`${API_BASE}/api/ai/chat-stream`);
+
+        eventSource.onopen = () => {
+            reconnectAttempts = 0;
+            updateStatus('Connected', true);
+            if (showGreeting) { // Only show greeting if flag is true
+                appendSystemMessage("Hello! I'm your AI assistant. How can I help you today?");
+            }
+        };
+
+        eventSource.onmessage = (event) => {
+            lastMessageTime = Date.now();
+
+            try {
+                const data = JSON.parse(event.data);
+                stopTypingIndicator();
+
+                if (isErrorResponse(data.content)) {
+                    appendErrorMessage(data.content);
+                } else if (isStructuredData(data.content)) {
+                    appendDataMessage(data.content);
+                } else {
+                    appendMessage("AI Assistant", data.content, 'ai');
+                }
+            } catch (e) {
+                console.error("Failed to parse SSE message:", e, "Data:", event.data);
+                appendErrorMessage("Received malformed response from server");
+            }
+        };
+
+        eventSource.onerror = (err) => {
+            console.error("SSE Error:", err);
+            updateStatus('Disconnected', false);
+
+            if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                reconnectAttempts++;
+                const delay = RECONNECT_DELAY * Math.pow(2, reconnectAttempts - 1);
+                appendSystemMessage(`Connection lost. Reconnecting in ${delay/1000} seconds...`);
+
+                setTimeout(() => {
+                    updateStatus('Reconnecting...', false);
+                    document.getElementById('status').classList.add('reconnecting');
+                    connectSSE(false); // 🔥 Pass false to suppress greeting on reconnects
+                }, delay);
+            } else {
+                appendSystemMessage("Failed to reconnect. Please refresh the page.");
+                document.getElementById('send-button').disabled = true;
+            }
+        };
+    }
+
+    function setupEventListeners() {
+        document.getElementById('send-button').addEventListener('click', sendMessageFromInput);
+        document.getElementById('message-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessageFromInput();
+            }
+        });
+    }
+
+    function startConnectionMonitor() {
+        setInterval(() => {
+            const now = Date.now();
+            if (now - lastMessageTime > 45000 && eventSource && eventSource.readyState === EventSource.OPEN) {
+                console.log("No messages received in 45 seconds. Reconnecting...");
+                eventSource.close();
+                // Pass a flag to suppress the greeting
+                connectSSE(false);
+            }
+        }, 5000);
+    }
+
+    function sendMessageFromInput() {
+        const input = document.getElementById('message-input');
+        const message = input.value.trim();
+
+        if (message) {
+            sendMessage(message);
+            input.value = '';
+        }
+    }
+
+    function updateStatus(text, isConnected) {
+        const status = document.getElementById('status');
+        const statusText = document.getElementById('status-text');
+        const indicator = document.getElementById('status-indicator');
+
+        statusText.textContent = text;
+        status.classList.toggle('connected', isConnected);
+        status.classList.remove('reconnecting');
+    }
+
+    function appendMessage(sender, content, type) {
+        const messages = document.getElementById('messages');
+        const messageDiv = document.createElement('div');
+
+        messageDiv.classList.add('message');
+        messageDiv.classList.add(`${type}-message`);
+
+        messageDiv.innerHTML = `
+            <div class="message-sender">${sender}</div>
+            <div class="message-content">${content}</div>
+        `;
+
+        messages.appendChild(messageDiv);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    function appendSystemMessage(content) {
+        const messages = document.getElementById('messages');
+        const messageDiv = document.createElement('div');
+
+        messageDiv.classList.add('message');
+        messageDiv.classList.add('ai-message');
+        messageDiv.style.fontStyle = 'italic';
+        messageDiv.style.opacity = '0.8';
+        messageDiv.textContent = content;
+
+        messages.appendChild(messageDiv);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    function appendErrorMessage(errorContent) {
+        const messages = document.getElementById('messages');
+        const errorDiv = document.createElement('div');
+
+        errorDiv.classList.add('message');
+        errorDiv.classList.add('ai-message');
+        errorDiv.classList.add('error-message');
+
+        const cleanError = cleanErrorMessage(errorContent);
+        const errorType = detectErrorType(errorContent);
+
+        errorDiv.innerHTML = `
+            <div class="message-sender error-sender">AI Assistant - ${errorType}</div>
+            <div class="message-content">
+                <p>⚠ <strong>${getUserFriendlyError(errorType)}</strong></p>
+                ${cleanError ? <div class="error-details">${cleanError}</div> : ''}
+                <p style="margin-top: 8px;">${getErrorResolution(errorType)}</p>
+            </div>
+        `;
+
+        messages.appendChild(errorDiv);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    function appendDataMessage(content) {
+        const messages = document.getElementById('messages');
+        const messageDiv = document.createElement('div');
+        const structuredData = parseStructuredData(content);
+
+        messageDiv.classList.add('message');
+        messageDiv.classList.add('ai-message');
+
+        messageDiv.innerHTML = `
+            <div class="message-sender">AI Assistant</div>
+            <div class="message-content">Here's the requested information:</div>
+            <div class="data-card ${structuredData.error ? 'error-card' : ''}">
+                ${formatStructuredData(structuredData)}
+            </div>
+        `;
+
+        messages.appendChild(messageDiv);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    function showTypingIndicator() {
+        if (isTyping) return;
+
+        const messages = document.getElementById('messages');
+        const typingDiv = document.createElement('div');
+
+        typingDiv.classList.add('typing-indicator');
+        typingDiv.id = 'typing-indicator';
+        typingDiv.innerHTML = `
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        `;
+
+        messages.appendChild(typingDiv);
+        messages.scrollTop = messages.scrollHeight;
+        isTyping = true;
+    }
+
+    function stopTypingIndicator() {
+        const typing = document.getElementById('typing-indicator');
+        if (typing) {
+            typing.remove();
+            isTyping = false;
+        }
+    }
+
+    function sendMessage(message) {
+        if (!message.trim()) return;
+
+        appendMessage("You", message, 'user');
+        showTypingIndicator();
+
+        fetch(`${API_BASE}/api/ai/send`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                sender: "User",
+                content: message
+            })
+        })
+    .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(text || 'Unknown error occurred');
+                });
+            }
+            //  Do NOT parse response if you expect no body
+            stopTypingIndicator();
+        })
+            .catch(err => {
+                console.error('Send failed:', err);
+                appendErrorMessage(err.message || "Une erreur inconnue s'est produite");
+                stopTypingIndicator();
+            });
+    }
+
+
+    // Utility functions
+    function isErrorResponse(content) {
+        if (!content) return true;
+        return content.includes("Error:") ||
+            content.includes("Exception:") ||
+            content.includes("failed") ||
+            content.toLowerCase().includes("access denied") ||
+            (content.startsWith("{") && content.endsWith("}") && content.includes("error"));
+    }
+
+    function isStructuredData(content) {
+        // Detect if content contains structured data (key: value pairs)
+        return content.includes(":") && content.split('\n').length > 2;
+    }
+
+    function cleanErrorMessage(error) {
+        if (!error) return 'No error details available';
+
+        try {
+            // Try to parse as JSON
+            const errorObj = JSON.parse(error);
+            return errorObj.message || errorObj.error || JSON.stringify(errorObj);
+        } catch (e) {
+            // Handle as text
+            return error
+                .replace(/^.*Error:/, '')
+                .replace(/^.*Exception:/, '')
+                .replace(/TextContent\[.*?\]/, '')
+                .replace(/at .\(.\)/g, '')
+                .replace(/\n/g, '<br>')
+                .trim();
+        }
+    }
+
+    function detectErrorType(errorContent) {
+        if (!errorContent) return "Unknown Error";
+        if (errorContent.includes("Access denied")) return "Security Error";
+        if (errorContent.includes("not found")) return "Data Not Found";
+        if (errorContent.includes("timeout")) return "Timeout";
+        if (errorContent.includes("Unexpected end of JSON input")) return "Data Parsing Error";
+        return "Processing Error";
+    }
+
+    function getUserFriendlyError(errorType) {
+        const errors = {
+            "Security Error": "Security issue",
+            "Data Not Found": "Information not found",
+            "Timeout": "Request timeout",
+            "Data Parsing Error": "Data processing error",
+            "Processing Error": "Processing error"
+        };
+        return errors[errorType] || "An error occurred";
+    }
+
+    function getErrorResolution(errorType) {
+        const resolutions = {
+            "Security Error": "Please contact system administrator",
+            "Data Not Found": "Try a different query",
+            "Timeout": "Please try again later",
+            "Data Parsing Error": "The server returned invalid data",
+            "Processing Error": "Please rephrase your request"
+        };
+        return resolutions[errorType] || "Please try again";
+    }
+
+    function parseStructuredData(content) {
+        const lines = content.split('\n');
+        const data = {
+            title: "Information",
+            items: [],
+            error: null
+        };
+
+        // Check for error first
+        if (isErrorResponse(content)) {
+            data.error = cleanErrorMessage(content);
+            return data;
+        }
+
+        // Parse structured data
+        lines.forEach(line => {
+            if (line.includes(':')) {
+                const [key, value] = line.split(':');
+                data.items.push({
+                    key: key.trim(),
+                    value: value.trim()
+                });
+            } else if (line.trim().length > 0) {
+                // This could be a title or description
+                if (!data.title || data.title === "Information") {
+                    data.title = line.trim();
+                }
+            }
+        });
+
+        return data;
+    }
+
+    function formatStructuredData(data) {
+        if (data.error) {
+            return <div class="error-details">${data.error}</div>;
+        }
+
+        let html = `<div class="data-header">
+                      <span class="data-title">${data.title}</span>
+                   </div>`;
+
+        data.items.forEach(item => {
+            html += `<div class="data-detail">
+                       <span>${item.key}:</span>
+                       <span>${item.value}</span>
+                     </div>`;
+        });
+
+        return html;
+    }
+</script>
+</body>
+</html>
