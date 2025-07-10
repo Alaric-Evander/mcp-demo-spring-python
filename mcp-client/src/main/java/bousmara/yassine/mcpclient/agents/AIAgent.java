@@ -23,7 +23,7 @@ public class AIAgent {
                                         5. Financial values must have exactly 2 decimal places.
                                         6. Always include the reference date.
                                         7. Respond in French unless otherwise requested.
-                                        8. If asked for all companies use 
+                                        8. If asked for all companies use  get_all_companies_info.
                                         For a specific employee informations use the get_info_about tool. If no name was specified take "Youssefi" as name by default.
                                         
                                         """)

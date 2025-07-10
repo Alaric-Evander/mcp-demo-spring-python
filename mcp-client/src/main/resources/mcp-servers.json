@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "python-server": {
-      "command": "C:/Users/yassi/scoop/shims/uv.exe",
+      "command": "C:/Users/yassi/AppData/Roaming/npm/node_modules/uv-x86_64-pc-windows-msvc/bin/uv.exe",
       "args": [
         "run",
         "--with",

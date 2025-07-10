@@ -275,7 +275,7 @@
     </div>
 </div>
 
-<script>
+<script type="text/javascript">
     const API_BASE = 'http://127.0.0.1:8066';
     let eventSource = null;
     let isTyping = false;
@@ -340,7 +340,7 @@
                 setTimeout(() => {
                     updateStatus('Reconnecting...', false);
                     document.getElementById('status').classList.add('reconnecting');
-                    connectSSE(false); // 🔥 Pass false to suppress greeting on reconnects
+                    connectSSE(false); // Pass false to suppress greeting on reconnects
                 }, delay);
             } else {
                 appendSystemMessage("Failed to reconnect. Please refresh the page.");
@@ -434,8 +434,8 @@
         errorDiv.innerHTML = `
             <div class="message-sender error-sender">AI Assistant - ${errorType}</div>
             <div class="message-content">
-                <p>⚠ <strong>${getUserFriendlyError(errorType)}</strong></p>
-                ${cleanError ? <div class="error-details">${cleanError}</div> : ''}
+                <p>⚠️ <strong>${getUserFriendlyError(errorType)}</strong></p>
+                ${cleanError ? `<div class="error-details">${cleanError}</div>` : ''}
                 <p style="margin-top: 8px;">${getErrorResolution(errorType)}</p>
             </div>
         `;
@@ -505,15 +505,15 @@
                 content: message
             })
         })
-    .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => {
-                    throw new Error(text || 'Unknown error occurred');
-                });
-            }
-            //  Do NOT parse response if you expect no body
-            stopTypingIndicator();
-        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(text || 'Unknown error occurred');
+                    });
+                }
+                // Do NOT parse response if you expect no body
+                stopTypingIndicator();
+            })
             .catch(err => {
                 console.error('Send failed:', err);
                 appendErrorMessage(err.message || "Une erreur inconnue s'est produite");
@@ -550,7 +550,7 @@
                 .replace(/^.*Error:/, '')
                 .replace(/^.*Exception:/, '')
                 .replace(/TextContent\[.*?\]/, '')
-                .replace(/at .\(.\)/g, '')
+                .replace(/at .*\(.*\)/g, '')
                 .replace(/\n/g, '<br>')
                 .trim();
         }
@@ -622,7 +622,7 @@
 
     function formatStructuredData(data) {
         if (data.error) {
-            return <div class="error-details">${data.error}</div>;
+            return `<div class="error-details">${data.error}</div>`;
         }
 
         let html = `<div class="data-header">

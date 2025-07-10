@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 @Service
 public class StockTools {
@@ -14,6 +15,18 @@ public class StockTools {
             new Company("Maroc Telecom", "Telecommunications", 36.7, 10600, "Maroc", "www.iam.ma"),
             new Company("OCP", "Extraction minière", 95.2, 20000, "Maroc", "www.ocpgroup.ma")
     );
+
+    // New tool to get all companies' data
+    @Tool(name = "get_all_companies_info",
+            description = "Get complete information for all available companies including stock data")
+    public String getAllCompaniesInfo() {
+        return companies.stream()
+                .map(company -> {
+                    Stock stock = getStockByCompanyName(company.name());
+                    return formatCompanyResponse(company, stock);
+                })
+                .collect(Collectors.joining("\n\n---\n\n"));
+    }
 
     @Tool(name = "get_company_full_info", description = "Get complete information about a company including stock data")
     public String getCompanyFullInfo(String companyName) {
