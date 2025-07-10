@@ -28,7 +28,6 @@ public class AIRestController {
 
     @GetMapping(value = "/chat-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter chatStream() {
-        System.out.println("HELOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO MAN");
         SseEmitter emitter = new SseEmitter(0L); // no timeout for long-lived connection
         emitters.add(emitter);
 

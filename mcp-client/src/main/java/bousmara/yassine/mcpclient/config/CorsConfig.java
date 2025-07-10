@@ -13,11 +13,8 @@ import java.util.Arrays;
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
-
-
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-
         registry.addMapping("/api/**").allowedOrigins(
 
                         "http://localhost:8081",
@@ -27,13 +24,9 @@ public class CorsConfig implements WebMvcConfigurer {
                         "http://192.168.1.5:8081"  // Add this line
 
                 )
-
                 .allowedMethods("*")
-
                 .allowedHeaders("*")
-
                 .exposedHeaders("Content-Type")
-
                 .allowCredentials(true);
 
     }
