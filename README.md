@@ -44,17 +44,17 @@ La réponse est affichée dans la bulle du chatbot.
 
 ### Composant      Technologie
 
-LLM                Ollama + LLaMA3.1
+LLM |                Ollama + LLaMA3.1
 
-Back-end           Spring Boot (Spring AI, MCP)
+Back-end |           Spring Boot (Spring AI, MCP)
 
-Serveur outils     Java (annotations) + Python
+Serveur outils |     Java (annotations) + Python
 
-UI                 HTML, CSS, Vanilla JS
+UI |                 HTML, CSS, Vanilla JS
 
-Protocole          MCP (Model Context Protocol)
+Protocole |          MCP (Model Context Protocol)
 
-Connexion          Server-Sent Events (SSE)
+Connexion |          Server-Sent Events (SSE)
 
 ## Exemple de Scénario
 
