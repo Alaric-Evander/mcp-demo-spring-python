@@ -8,14 +8,8 @@ le protocole MCP (Model Context Protocol) pour exposer et invoquer dynamiquement
 L'interface utilisateur (HTML/JS) permet une expérience fluide via SSE (Server-Sent Events), et le back-end Spring communique avec des serveurs d'outils à la fois en Java (Spring) et Python (FastAPI).
 
 ## Architecture Globale
+<img width="645" height="200" alt="image" src="https://github.com/user-attachments/assets/e791cb06-5498-4ee6-9921-796d9e49eff6" />
 
-+----------------+        +------------------+       +-----------------+
-| Interface Web  | <----> | Spring Boot       | <---> | MCP Tools (Java |
-| HTML/CSS/JS    |        | (mcp-client)      |       |  + Python)      |
-+----------------+        +------------------+       +-----------------+
-        |                        |  └---> LLM (Ollama / llama3.1)
-        |
-        └---> chat-stream (SSE)
 
 ## Cycle de Fonctionnement Complet
 
