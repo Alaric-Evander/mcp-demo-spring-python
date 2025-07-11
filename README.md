@@ -42,7 +42,7 @@ La réponse est affichée dans la bulle du chatbot.
 
 ## Technologies Utilisées
 
-### Composant      Technologie
+### Composant |      Technologie
 
 LLM |                Ollama + LLaMA3.1
 
