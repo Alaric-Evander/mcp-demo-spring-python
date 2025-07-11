@@ -1,4 +1,81 @@
-Les Captures d'écran
+# Rapport  : Système Chatbot des entreprises marocaines avec Spring Boot, LLM et MCP (Java + Python)
+
+## Objectif du Projet
+Ce projet vise à développer un chatbot intelligent pour assister les utilisateurs dans leurs requêtes sur les entreprises marocaines, en s'appuyant sur :
+des modèles de langage (LLM via Ollama + LLaMA3) et même OpenAi et Claude,
+une architecture multi-agents et multi-outils (Java + Python),
+le protocole MCP (Model Context Protocol) pour exposer et invoquer dynamiquement des outils.
+L'interface utilisateur (HTML/JS) permet une expérience fluide via SSE (Server-Sent Events), et le back-end Spring communique avec des serveurs d'outils à la fois en Java (Spring) et Python (FastAPI).
+
+## Architecture Globale
+
++----------------+        +------------------+       +-----------------+
+| Interface Web  | <----> | Spring Boot       | <---> | MCP Tools (Java |
+| HTML/CSS/JS    |        | (mcp-client)      |       |  + Python)      |
++----------------+        +------------------+       +-----------------+
+        |                        |  └---> LLM (Ollama / llama3.1)
+        |
+        └---> chat-stream (SSE)
+
+## Cycle de Fonctionnement Complet
+
+### 1.Démarrage des serveurs :
+mcp-server (Java) expose les outils annotés via @Util (StockTools).
+python-mcp-server démarre via server.py et expose des fonctions Python comme outils MCP.
+
+### 2.Lancement du mcp-client :
+Se connecte au LLM Ollama.
+Connecte dynamiquement les outils Java et Python via ToolCallbackProvider.
+Lit mcp-servers.json pour démarrer server.py.
+
+### 3.Connexion HTML (à /chat-stream) :
+L’interface JS établit une connexion SSE avec /api/ai/chat-stream pour recevoir les réponses.
+L’état de connexion est mis à jour (connecté, reconnecting...).
+
+### 4.Envoi de message utilisateur :
+L’interface appelle POST /api/ai/send.
+AIRestController transmet le message à AIAgent.askLLM().
+Le LLM traite la requête avec possibilité d’appeler un outil MCP.
+
+### 5.Appel d’outil MCP :
+Le LLM identifie qu’un outil peut répondre (ex: get_info_about en Python).
+Le chatClient appelle dynamiquement l’outil via le protocole MCP.
+La réponse est renvoyée via SSE à l’interface.
+
+### 6.Affichage HTML :
+La réponse est analysée (structurée, erreur, texte simple).
+La réponse est affichée dans la bulle du chatbot.
+
+## Technologies Utilisées
+
+### Composant      Technologie
+
+LLM                Ollama + LLaMA3.1
+
+Back-end           Spring Boot (Spring AI, MCP)
+
+Serveur outils     Java (annotations) + Python
+
+UI                 HTML, CSS, Vanilla JS
+
+Protocole          MCP (Model Context Protocol)
+
+Connexion          Server-Sent Events (SSE)
+
+## Exemple de Scénario
+
+### Utilisateur : 
+"Donne-moi les infos sur un employé appelé Ahmed"
+
+### Cycle :
+LLM reçoit la question via askLLM().
+Il identifie que get_info_about(name) peut répondre.
+Il appelle le serveur Python MCP.
+Le résultat JSON est renvoyé et formaté dans l'interface.
+
+
+
+## Les Captures d'écran
 
   POSTMAN requetes :
 <img width="824" height="905" alt="Capture" src="https://github.com/user-attachments/assets/fb45fb48-ab53-4747-8e5a-63a6b41d550b" />
